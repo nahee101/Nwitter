@@ -1,6 +1,9 @@
 /* 🧡 v9 사용 */
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"
+import { getAuth } from "firebase/auth";
+/* 🧡 database 사용 */
+// collection -> document의 그룹
+import { getFirestore } from "firebase/firestore";
 
 /* 🧡 환경변수 사용(.env) */
 /* 반드시 REACT_APP으로 시작! */
@@ -17,5 +20,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const authService = getAuth();
+export const dbService = getFirestore();
 
 export default app;
