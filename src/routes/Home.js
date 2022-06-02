@@ -14,6 +14,8 @@ const Home = ({userObj}) => {
     const [nweet, setNweet] = useState('');
     /* 🧡 작성했던 nweet firestore에서 가져오기 */
     const [nweets, setNweets] = useState([]);
+    /* 사진 업로드 관련 */
+    const [attachment, setAttachment] = useState();
 
     useEffect(() => {
         const q = query(
@@ -41,19 +43,52 @@ const Home = ({userObj}) => {
         const {target: {value}} = event;
         setNweet(value);
     };
+
+    const onFileChange = (event) => {
+        const {target: {files}} = event;
+        const theFile = files[0];
+        // 파일 이름 읽기
+        const reader = new FileReader();
+        reader.onloadend = (finishedEvent) => {
+            const {currentTarget: {result}} = finishedEvent;
+            setAttachment(result);
+        };
+        reader.readAsDataURL(theFile);
+    };
+
+    const onClearAttatchment = () => setAttachment(null);
+
     return (
         <div>
             <form
             onSubmit={onSubmit}>
+                {/* nweet 작성창 */}
                 <input
                 onChange={onChange}
                 value={nweet}
                 type="text" 
                 placeholder="what's on your mind?" 
                 maxLength={120} />
+                {/* nweet 사진 업로드 */}
+                <input 
+                onChange={onFileChange}
+                type="file" 
+                accept="image/*" />
+                {/* nweet 업로드 */}
                 <input 
                 type="submit" 
                 value="Nweet" />
+                {/* 업로드할 사진 미리 보기 */}
+                {attachment && (
+                    <div>
+                        <img 
+                        src={attachment} 
+                        width="50px" height="50px" />
+
+                        <button
+                        onClick={onClearAttatchment}>Clear</button>
+                    </div>
+                )}
             </form>
 
             <div>

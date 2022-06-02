@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { dbService } from "fbase";
 import { async } from "@firebase/util";
 
@@ -18,11 +18,16 @@ const Nweet = ({nweetObj, isOwner}) => {
             await deleteDoc(doc(dbService, "nweets", nweetObj.id));
         };
     };
+
+    /* editing 모드 끄고 켜기 */
     const toggleEditting = () => setEditing((prev) => !prev);
+
+    /* 업데이트 */
     const onSubmit = async (event) => {
         event.preventDefault();
-        await dbService.doc(`nweets/${nweetObj.id}`).
-    }
+        updateDoc(doc(dbService, "nweets", nweetObj.id), {text: newNweet});
+        setEditing(false);
+    };
     const onChange = (event) => {
         const {target: {value}} = event;
         setNewNweet(value);
