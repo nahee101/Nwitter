@@ -1,5 +1,7 @@
 import { async } from "@firebase/util";
-import { dbService } from "fbase";
+import { dbService, storageService } from "fbase";
+import { ref, uploadString, getDownloadURL } from "@firebase/storage";
+import { v4 as uuidv4 } from "uuid";
 /* Cloud Firestore에서 자동으로 ID 생성 */
 import { 
     collection, addDoc, onSnapshot,
@@ -15,7 +17,7 @@ const Home = ({userObj}) => {
     /* 🧡 작성했던 nweet firestore에서 가져오기 */
     const [nweets, setNweets] = useState([]);
     /* 사진 업로드 관련 */
-    const [attachment, setAttachment] = useState();
+    const [attachment, setAttachment] = useState('');
 
     useEffect(() => {
         const q = query(
@@ -32,13 +34,38 @@ const Home = ({userObj}) => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        await addDoc(collection(dbService, "nweets"), {
+        
+        let attachmentUrl = "";
+
+        /* 파일 첨부 없이 텍스트만 올리고 싶은 경우가 있어 
+        attachment가 있을 때만 하단 코드 실행*/
+        if(attachment !== "") {
+            // 파일 경로 참조 만들기
+            const attachmentRef = ref(storageService, `${userObj.uid}/${uuidv4()}` );
+            // storage 참조 경로로 파일 업로드 하기
+            const response = await uploadString(attachmentRef, attachment, "data_url");
+            console.log(response) // rules 들어가서 false로 돼 있는 거 true로 변경해야 함
+            // 참조 경로에 있는 파일의 URL을 다운로드 해서 attachmentURL 변수에 넣어 업데이트
+            attachmentUrl = await getDownloadURL(response.ref);
+        };
+
+        // submit하면 
+        const nweetObj = {
             text: nweet,
             createdAt: Date.now(),
-            creatorId: userObj.uid
-        });
-        setNweet("");
+            creatorId: userObj.uid,
+            attachmentUrl
+        };
+
+        await addDoc(collection(dbService, "nweets"), nweetObj);
+
+        // state를 비워서 form 비우기
+        setNweet(""); 
+
+        // state를 비워서 파일 미리보기 img src 비우기
+        setAttachment("");
     };
+
     const onChange = (event) => {
         const {target: {value}} = event;
         setNweet(value);
@@ -56,7 +83,7 @@ const Home = ({userObj}) => {
         reader.readAsDataURL(theFile);
     };
 
-    const onClearAttatchment = () => setAttachment(null);
+    const onClearAttatchment = () => setAttachment('');
 
     return (
         <div>

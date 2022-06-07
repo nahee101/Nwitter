@@ -4,6 +4,7 @@ import { getAuth } from "firebase/auth";
 /* 🧡 database 사용 */
 // collection -> document의 그룹
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 /* 🧡 환경변수 사용(.env) */
 /* 반드시 REACT_APP으로 시작! */
@@ -21,5 +22,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const authService = getAuth();
 export const dbService = getFirestore();
+export const storageService = getStorage();
 
 export default app;

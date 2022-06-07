@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { dbService } from "fbase";
+import { doc, deleteDoc, updateDoc, getFirestore } from "firebase/firestore";
+import { deleteObject, ref } from "firebase/storage";
+import { dbService, storageService } from "fbase";
 import { async } from "@firebase/util";
 
 const Nweet = ({nweetObj, isOwner}) => {
@@ -9,13 +10,18 @@ const Nweet = ({nweetObj, isOwner}) => {
     /* 업데이트 */
     const [newNweet, setNewNweet] = useState(nweetObj.text);
 
+    //삭제하려는 이미지 파일을 가리키는 ref 생성하기
+    const desertRef = ref(storageService, nweetObj.attachmentURL);
+
     const onDeleteClick = async () => {
-        const ok = window.confirm("Are you sure you want to delete this nweet?");
-        console.log(ok);
+        const ok = window.confirm("정말 이 nweet을 삭제할까요?");
         if(ok) {
-            // delete nweet
-            // deletDoc(doc(database, "collection", "document"))
+            // 해당 nweet 파이어스토어에서 삭제
             await deleteDoc(doc(dbService, "nweets", nweetObj.id));
+            // 삭제하려는 nweet에 이미지 파일이 있으면 이미지 파일을 storage에서 삭제
+            if(nweetObj.attachmentURL !== "") {
+                await deleteObject(desertRef);
+            }
         };
     };
 
@@ -54,6 +60,9 @@ const Nweet = ({nweetObj, isOwner}) => {
                 ) : (
                     <>
                         <h4>{nweetObj.text}</h4>
+                        {nweetObj.attachmentUrl && (
+                            <img src={nweetObj.attachmentURL} width="50px" height="50px" />
+                        )}
                         {isOwner && (
                             <>
                                 <button onClick={onDeleteClick}>Delete Nweet</button>
